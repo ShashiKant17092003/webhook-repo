@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>GitHub Webhook Events</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #00fe99;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #111827;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 12px 14px;
+      text-align: left;
+      border-bottom: 1px solid #1f2933;
+    }
+
+    th {
+      background: #020617;
+      color: #38bdf8;
+      text-transform: uppercase;
+      font-size: 13px;
+    }
+
+    tr:hover {
+      background: #1e293b;
+    }
+
+    .badge {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .PUSH { background: #16a34a; }
+    .PULL_REQUEST { background: #2563eb; }
+    .MERGE { background: #9333ea; }
+
+    .center {
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>GitHub Webhook Events</h1>
+
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Action</th>
+        <th>Author</th>
+        <th>From Branch</th>
+        <th>To Branch</th>
+        <th>Request ID</th>
+        <th>Timestamp</th>
+      </tr>
+    </thead>
+    <tbody id="table-body">
+      <!-- Data will be injected here -->
+    </tbody>
+  </table>
+
+  <script>
+    const API_URL = "https://35f88130c456.ngrok-free.app/events";
+
+    async function loadEvents() {
+      try {
+        const res = await fetch(API_URL);
+        const data = await res.json();
+
+        const tbody = document.getElementById("table-body");
+        tbody.innerHTML = "";
+
+        data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+        data.forEach((event, index) => {
+          const row = document.createElement("tr");
+
+          row.innerHTML = `
+            <td class="center">${index + 1}</td>
+            <td><span class="badge ${event.action}">${event.action}</span></td>
+            <td>${event.author || "-"}</td>
+            <td>${event.from_branch || "-"}</td>
+            <td>${event.to_branch || "-"}</td>
+            <td style="font-size:12px">${event.request_id}</td>
+            <td>${new Date(event.timestamp).toLocaleString()}</td>
+          `;
+
+          tbody.appendChild(row);
+        });
+
+      } catch (err) {
+        console.error("Error loading data:", err);
+      }
+    }
+
+    loadEvents();
+    setInterval(loadEvents,15000);
+  </script>
+
+</body>
+</html>
